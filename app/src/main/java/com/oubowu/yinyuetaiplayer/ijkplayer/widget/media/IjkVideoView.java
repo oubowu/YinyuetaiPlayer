@@ -772,11 +772,11 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
     }
 
     // 自己添加的方法
-    public void toggleMediaControlsVisbility() {
+    public void toggleMediaControlsVisibility() {
         if (mMediaController.isShowing()) {
             mMediaController.hide();
         } else {
-            mMediaController.show();
+            mMediaController.show(0);
         }
     }
 

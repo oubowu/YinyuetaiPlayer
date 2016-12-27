@@ -26,6 +26,12 @@ public class YytLayout extends LinearLayout {
     // 与mFlexView联动的View
     private View mFollowView;
 
+    public void setDragEnable(boolean dragEnable) {
+        mIsDragEnable = dragEnable;
+    }
+
+    private boolean mIsDragEnable;
+
     public boolean isHorizontalEnable() {
         return mHorizontalEnable;
     }
@@ -224,9 +230,10 @@ public class YytLayout extends LinearLayout {
         // 这里所做的是判断手指是否落在mFlexView真实范围内
         mInFlexViewTouchRange = ev.getX() >= left && ev.getY() >= top;
 
-
         if (mInFlexViewTouchRange) {
-            return mDragHelper.shouldInterceptTouchEvent(ev);
+
+            return mIsDragEnable && mDragHelper.shouldInterceptTouchEvent(ev);
+
         } else {
             return super.onInterceptTouchEvent(ev);
         }

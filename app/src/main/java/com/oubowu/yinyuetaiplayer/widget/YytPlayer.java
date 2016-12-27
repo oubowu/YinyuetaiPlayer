@@ -109,7 +109,7 @@ public class YytPlayer extends YytLayout {
                             if (isHorizontalEnable()) {
                                 expand();
                             } else {
-                                mIjkVideoView.toggleMediaControlsVisbility();
+                                mIjkVideoView.toggleMediaControlsVisibility();
                             }
                         }
                         break;
@@ -166,6 +166,8 @@ public class YytPlayer extends YytLayout {
                     @Override
                     public void onPrepared(IMediaPlayer mp) {
                         mIjkVideoView.start();
+                        // 视频开始播放的时候会重新layout，如果对播放器做了拖动操作，重新layout会导致布局异常，所以在这里只有视频开始播放才给拖动的功能
+                        setDragEnable(true);
                     }
                 });
 
@@ -192,6 +194,8 @@ public class YytPlayer extends YytLayout {
 
             // 播放视频
             mIjkVideoView.setVideoURI(Uri.parse(path));
+
+            setDragEnable(false);
 
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
