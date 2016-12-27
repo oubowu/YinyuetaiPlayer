@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <com.oubowu.yinyuetaiplayer.ijkplayer.widget.media.IjkVideoView
+        android:id="@+id/ijk_player_view"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="#000000">
+
+    </com.oubowu.yinyuetaiplayer.ijkplayer.widget.media.IjkVideoView>
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#666666">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="0dp">
+
+            <ImageView
+                android:id="@+id/iv_avatar"
+                tools:src="@mipmap/ic_launcher"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_name"
+                tools:text="MC GREE"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_alignBottom="@+id/iv_avatar"
+                android:layout_alignTop="@+id/iv_avatar"
+                android:layout_toRightOf="@+id/iv_avatar"
+                android:gravity="center"
+                android:paddingLeft="2dp"
+                android:textColor="#ffffff"
+                android:textSize="13sp"/>
+
+            <TextView
+                android:id="@+id/tv_time"
+                tools:text="2016-12-27 00:53:49"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/iv_avatar"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="8dp"
+                android:paddingBottom="2dp"
+                android:textColor="#ffffff"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/tv_title"
+                tools:text="《放开那个女孩》网络直播知多少"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/iv_avatar"
+                android:ellipsize="end"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="8dp"
+                android:singleLine="true"
+                android:textColor="#ffffff"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/tv_desc"
+                tools:text="而最火的人就是网红，直播和网红相辅相成。而今天的这部网络大电影的女主基本可以算是以为直播N线网红，故事也不过一场直播绑架。"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_title"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="8dp"
+                android:textColor="#ffffff"
+                android:textSize="15sp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/yyt_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/tv_desc">
+
+            </android.support.v7.widget.RecyclerView>
+
+        </RelativeLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+</merge>
