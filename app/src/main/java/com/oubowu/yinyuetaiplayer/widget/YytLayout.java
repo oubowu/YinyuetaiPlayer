@@ -6,13 +6,13 @@ import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 /**
- * Created by Oubowu on 2016/12/26 13:58.<p>
- *  实现了布局交互的容器
+ * Created by Oubowu on 201612/26 13:58.<p>
+ * 实现了布局交互的容器
  */
-public class YytLayout extends ViewGroup {
+public class YytLayout extends LinearLayout {
 
     private static final int MIN_FLING_VELOCITY = 400;
     private ViewDragHelper mDragHelper;
@@ -38,7 +38,6 @@ public class YytLayout extends ViewGroup {
 
     // 水平滑动与否的标志位
     private boolean mHorizontalEnable;
-
     // 是否正在关闭页面的标志位
     private boolean mIsClosing;
 
@@ -59,6 +58,8 @@ public class YytLayout extends ViewGroup {
     }
 
     private void init(Context context, AttributeSet attrs) {
+
+        setOrientation(VERTICAL);
 
         final float density = getResources().getDisplayMetrics().density;
         final float minVel = MIN_FLING_VELOCITY * density;
@@ -222,44 +223,43 @@ public class YytLayout extends ViewGroup {
 
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int parentDesireHeight = 0;
-        int parentDesireWidth = 0;
-
-        int tmpWidth = 0;
-        int tmpHeight = 0;
-
-        if (getChildCount() != 2) {
-            throw new IllegalArgumentException("只允许容器添加两个子View！");
-        }
-
-        if (getChildCount() > 0) {
-            for (int i = 0; i < getChildCount(); i++) {
-                final View child = getChildAt(i);
-                // 获取子元素的布局参数
-                final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
-                // 测量子元素并考虑外边距
-                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
-                // 计算父容器的期望值
-                parentDesireWidth = child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
-                // 取子控件最大宽度
-                tmpWidth = Math.max(tmpWidth, parentDesireWidth);
-                parentDesireHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
-            }
-            parentDesireWidth = tmpWidth;
-            parentDesireHeight += tmpHeight;
-            // 考虑父容器内边距
-            parentDesireWidth += getPaddingLeft() + getPaddingRight();
-            parentDesireHeight += getPaddingTop() + getPaddingBottom();
-            // 尝试比较建议最小值和期望值的大小并取大值
-            parentDesireWidth = Math.max(parentDesireWidth, getSuggestedMinimumWidth());
-            parentDesireHeight = Math.max(parentDesireHeight, getSuggestedMinimumHeight());
-        }
-        // 设置最终测量值
-        setMeasuredDimension(resolveSize(parentDesireWidth, widthMeasureSpec), resolveSize(parentDesireHeight, heightMeasureSpec));
-
-    }
+    // 如果直接继承ViewGroup的话，这里的测量有问题，如果第二个子元素是NestedScrollView嵌套了RecyclerView的话，滚动到底部会显示不全；暂时继承LinearLayout让它帮忙测量
+    //    @Override
+    //    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    //
+    //        int desireHeight = 0;
+    //        int parentDesireWidth = 0;
+    //
+    //        int tmpHeight;
+    //
+    //        if (getChildCount() != 2) {
+    //            throw new IllegalArgumentException("只允许容器添加两个子View！");
+    //        }
+    //
+    //        if (getChildCount() > 0) {
+    //            for (int i = 0; i < getChildCount(); i++) {
+    //                final View child = getChildAt(i);
+    //                // 获取子元素的布局参数
+    //                final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+    //                // 测量子元素并考虑外边距
+    //                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
+    //                // 计算子元素宽度，取子控件最大宽度
+    //                parentDesireWidth = Math.max(parentDesireWidth, child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);
+    //                // 计算子元素高度
+    //                tmpHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+    //                desireHeight += tmpHeight;
+    //            }
+    //            // 考虑父容器内边距
+    //            parentDesireWidth += getPaddingLeft() + getPaddingRight();
+    //            desireHeight += getPaddingTop() + getPaddingBottom();
+    //            // 尝试比较建议最小值和期望值的大小并取大值
+    //            parentDesireWidth = Math.max(parentDesireWidth, getSuggestedMinimumWidth());
+    //            desireHeight = Math.max(desireHeight, getSuggestedMinimumHeight());
+    //        }
+    //        Log.e("YytLayout","255行-onMeasure(): "+" "+desireHeight);
+    //        // 设置最终测量值
+    //        setMeasuredDimension(resolveSize(parentDesireWidth, widthMeasureSpec), resolveSize(desireHeight, heightMeasureSpec));
+    //    }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -360,29 +360,29 @@ public class YytLayout extends ViewGroup {
         invalidate();
     }
 
-    // 生成默认的布局参数
-    @Override
-    protected LayoutParams generateDefaultLayoutParams() {
-        return super.generateDefaultLayoutParams();
-    }
-
-    // 生成布局参数,将布局参数包装成我们的
-    @Override
-    protected LayoutParams generateLayoutParams(LayoutParams p) {
-        return new MarginLayoutParams(p);
-    }
-
-    // 生成布局参数,从属性配置中生成我们的布局参数
-    @Override
-    public LayoutParams generateLayoutParams(AttributeSet attrs) {
-        return new MarginLayoutParams(getContext(), attrs);
-    }
-
-    // 查当前布局参数是否是我们定义的类型这在code声明布局参数时常常用到
-    @Override
-    protected boolean checkLayoutParams(LayoutParams p) {
-        return p instanceof MarginLayoutParams;
-    }
+    //    // 生成默认的布局参数
+    //    @Override
+    //    protected LayoutParams generateDefaultLayoutParams() {
+    //        return super.generateDefaultLayoutParams();
+    //    }
+    //
+    //    // 生成布局参数,将布局参数包装成我们的
+    //    @Override
+    //    protected LayoutParams generateLayoutParams(LayoutParams p) {
+    //        return new MarginLayoutParams(p);
+    //    }
+    //
+    //    // 生成布局参数,从属性配置中生成我们的布局参数
+    //    @Override
+    //    public LayoutParams generateLayoutParams(AttributeSet attrs) {
+    //        return new MarginLayoutParams(getContext(), attrs);
+    //    }
+    //
+    //    // 查当前布局参数是否是我们定义的类型这在code声明布局参数时常常用到
+    //    @Override
+    //    protected boolean checkLayoutParams(LayoutParams p) {
+    //        return p instanceof MarginLayoutParams;
+    //    }
 
     /**
      * 子View的位置缓存

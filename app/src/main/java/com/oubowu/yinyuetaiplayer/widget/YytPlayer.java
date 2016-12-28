@@ -118,9 +118,16 @@ public class YytPlayer extends YytLayout {
         });
 
         mYytRecyclerView = (RecyclerView) findViewById(R.id.yyt_recycler_view);
+
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(context, 2, LinearLayoutManager.VERTICAL, false);
+        gridLayoutManager.setSmoothScrollbarEnabled(true);
+        gridLayoutManager.setAutoMeasureEnabled(true);
+        mYytRecyclerView.setLayoutManager(gridLayoutManager);
+
         mYytRecyclerView.setNestedScrollingEnabled(false);
-        mYytRecyclerView.setLayoutManager(new GridLayoutManager(context, 2, LinearLayoutManager.VERTICAL, false));
+
         mYytRecyclerView.addItemDecoration(new VideoListItemDecoration(context));
+
         mYytRecyclerView.setAdapter(mVideoListAdapter);
 
     }
