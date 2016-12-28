@@ -24,7 +24,8 @@ import java.util.Locale;
 
 
 /**
- * Created by Oubowu on 2016/9/8 0008 12:20.
+ * Created by Oubowu on 2016/9/8 0008 12:20.<p>
+ * 播放器的控制器
  */
 public class IjkController implements IMediaController, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
@@ -55,7 +56,7 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
 
     private boolean mIsUserTouch;
 
-    private OnBackPressListener mOnBackPressListener;
+    private OnViewStateListener mOnViewStateListener;
 
     public IjkController(IjkVideoView ijkVideoView, String videoName) {
         mHandler = new IjkControllerHandler(ijkVideoView.getHandler().getLooper(), this);
@@ -150,8 +151,8 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
 
         switch (v.getId()) {
             case R.id.iv_back:
-                if (mOnBackPressListener != null) {
-                    mOnBackPressListener.onBackPress();
+                if (mOnViewStateListener != null) {
+                    mOnViewStateListener.onBackPress();
                 }
                 break;
             case R.id.iv_play:
@@ -227,7 +228,7 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
 
     @Override
     public void show() {
-        show(300);
+        show(0);
     }
 
     /**
@@ -290,8 +291,8 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
                     case SHOW:
                         // 显示布局
                         if (controller.mControlView != null) {
-                            controller.mControlView.setVisibility(View.VISIBLE);
 
+                            controller.mControlView.setVisibility(View.VISIBLE);
                             controller.mTopLayout.setVisibility(View.VISIBLE);
                             controller.mBottomLayout.setVisibility(View.VISIBLE);
                             controller.mProgressBar.setVisibility(View.INVISIBLE);
@@ -325,10 +326,10 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
         /**
          * 标示是要做隐藏还是显示的动画
          */
-        private boolean mIsShow;
+        private boolean mShow;
 
-        public AnimatorListener setState(boolean isShow) {
-            mIsShow = isShow;
+        public AnimatorListener setState(boolean show) {
+            mShow = show;
             return this;
         }
 
@@ -342,7 +343,7 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
 
             mAnimationStart = false;
 
-            if (!mIsShow) {
+            if (!mShow) {
                 mControlView.setVisibility(View.INVISIBLE);
             }
         }
@@ -368,14 +369,17 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
     }
 
     /**
-     * 点击播放器返回按键的监听器
+     * 控件布局的监听器
      */
-    public interface OnBackPressListener {
+    public interface OnViewStateListener {
+        /**
+         * 点击播放器返回按键
+         */
         void onBackPress();
     }
 
-    public void setOnBackPressListener(OnBackPressListener onBackPressListener) {
-        mOnBackPressListener = onBackPressListener;
+    public void setOnViewStateListener(OnViewStateListener onViewStateListener) {
+        mOnViewStateListener = onViewStateListener;
     }
 
 

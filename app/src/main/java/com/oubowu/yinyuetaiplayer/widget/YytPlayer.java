@@ -33,7 +33,8 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 /**
- * Created by Oubowu on 2016/12/27 17:32.
+ * Created by Oubowu on 2016/12/27 17:32.<p>
+ * 仿音悦台播放页面的具体实现，组合控件的形式
  */
 public class YytPlayer extends YytLayout {
 
@@ -60,34 +61,16 @@ public class YytPlayer extends YytLayout {
         // 继承YytLayout并且通过merge标签减少层级来实现组合控件
         LayoutInflater.from(context).inflate(R.layout.yyt_player, this, true);
 
-        setOnLayoutStateListener(new YytLayout.OnLayoutStateListener() {
+        setOnLayoutStateListener(new OnLayoutStateListener() {
 
             @Override
             public void onClose() {
                 setVisibility(View.INVISIBLE);
                 mIjkVideoView.release(true);
             }
-
-            @Override
-            public void onScroll() {
-                if (mIjkController != null) {
-                    mIjkController.hide();
-                }
-            }
         });
 
         mIjkVideoView = (IjkVideoView) findViewById(R.id.ijk_player_view);
-        //        mIjkVideoView.setOnClickListener(new OnClickListener() {
-        //            @Override
-        //            public void onClick(View v) {
-        //                Log.e("YytPlayer","81行-onClick(): "+" ");
-        //                if (isHorizontalEnable()) {
-        //                    expand();
-        //                } else {
-        //                    mIjkVideoView.toggleMediaControlsVisbility();
-        //                }
-        //            }
-        //        });
         final int scaledTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
         mIjkVideoView.setOnTouchListener(new OnTouchListener() {
 
@@ -153,7 +136,7 @@ public class YytPlayer extends YytLayout {
 
                 mIjkController = new IjkController(mIjkVideoView, name);
 
-                mIjkController.setOnBackPressListener(new IjkController.OnBackPressListener() {
+                mIjkController.setOnViewStateListener(new IjkController.OnViewStateListener() {
                     @Override
                     public void onBackPress() {
                         stop();
@@ -166,8 +149,6 @@ public class YytPlayer extends YytLayout {
                     @Override
                     public void onPrepared(IMediaPlayer mp) {
                         mIjkVideoView.start();
-                        // 视频开始播放的时候会重新layout，如果对播放器做了拖动操作，重新layout会导致布局异常，所以在这里只有视频开始播放才给拖动的功能
-                        setDragEnable(true);
                     }
                 });
 
@@ -194,8 +175,6 @@ public class YytPlayer extends YytLayout {
 
             // 播放视频
             mIjkVideoView.setVideoURI(Uri.parse(path));
-
-            setDragEnable(false);
 
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
@@ -255,5 +234,9 @@ public class YytPlayer extends YytLayout {
         if (mIjkVideoView != null) {
             mIjkVideoView.release(true);
         }
+    }
+
+    public boolean isShowing() {
+        return getVisibility() == VISIBLE;
     }
 }

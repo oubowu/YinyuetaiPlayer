@@ -776,7 +776,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         if (mMediaController.isShowing()) {
             mMediaController.hide();
         } else {
-            mMediaController.show(0);
+            mMediaController.show();
         }
     }
 

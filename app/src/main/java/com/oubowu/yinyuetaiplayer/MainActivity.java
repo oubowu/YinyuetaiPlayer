@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 int pos = (Integer) view.getTag();
                 VideoSummary summary = mVideoListAdapter.getData().get(pos);
 
-                mYytPlayer.playVideo(mVideoListAdapter.getData(),summary);
+                mYytPlayer.playVideo(mVideoListAdapter.getData(), summary);
             }
         });
 
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (mYytPlayer.getVisibility() == View.VISIBLE) {
+        if (mYytPlayer.isShowing()) {
             // 按返回键的时候，YytLayout可见的话，设置不可见，并且关闭播放器
             mYytPlayer.stop();
         } else {

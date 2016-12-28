@@ -6,12 +6,13 @@ import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 
 /**
- * Created by Oubowu on 2016/12/26 13:58.
+ * Created by Oubowu on 2016/12/26 13:58.<p>
+ *  实现了布局交互的容器
  */
-public class YytLayout extends LinearLayout {
+public class YytLayout extends ViewGroup {
 
     private static final int MIN_FLING_VELOCITY = 400;
     private ViewDragHelper mDragHelper;
@@ -26,11 +27,10 @@ public class YytLayout extends LinearLayout {
     // 与mFlexView联动的View
     private View mFollowView;
 
-    public void setDragEnable(boolean dragEnable) {
-        mIsDragEnable = dragEnable;
-    }
-
-    private boolean mIsDragEnable;
+    // 响应滑动做缩放的View保存的位置
+    private ChildLayoutPosition mFlexLayoutPosition;
+    // 与mFlexView联动的View保存的位置
+    private ChildLayoutPosition mFollowLayoutPosition;
 
     public boolean isHorizontalEnable() {
         return mHorizontalEnable;
@@ -59,9 +59,6 @@ public class YytLayout extends LinearLayout {
     }
 
     private void init(Context context, AttributeSet attrs) {
-
-        // 垂直布局
-        setOrientation(VERTICAL);
 
         final float density = getResources().getDisplayMetrics().density;
         final float minVel = MIN_FLING_VELOCITY * density;
@@ -210,10 +207,90 @@ public class YytLayout extends LinearLayout {
                 mDragWidth = 0;
             }
 
-            if (mOnLayoutStateListener != null) {
-                mOnLayoutStateListener.onScroll();
+            if (mFlexLayoutPosition == null) {
+                mFlexLayoutPosition = new ChildLayoutPosition();
+                mFollowLayoutPosition = new ChildLayoutPosition();
             }
 
+            mFlexLayoutPosition.setPosition(mFlexView.getLeft(), mFlexView.getRight(), mFlexView.getTop(), mFlexView.getBottom());
+            mFollowLayoutPosition.setPosition(mFollowView.getLeft(), mFollowView.getRight(), mFollowView.getTop(), mFollowView.getBottom());
+
+            //            Log.e("FlexCallback", "225行-onViewPositionChanged(): 【" + mFlexView.getLeft() + ":" + mFlexView.getRight() + ":" + mFlexView.getTop() + ":" + mFlexView
+            //                    .getBottom() + "】 【" + mFollowView.getLeft() + ":" + mFollowView.getRight() + ":" + mFollowView.getTop() + ":" + mFollowView.getBottom() + "】");
+
+        }
+
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int parentDesireHeight = 0;
+        int parentDesireWidth = 0;
+
+        int tmpWidth = 0;
+        int tmpHeight = 0;
+
+        if (getChildCount() != 2) {
+            throw new IllegalArgumentException("只允许容器添加两个子View！");
+        }
+
+        if (getChildCount() > 0) {
+            for (int i = 0; i < getChildCount(); i++) {
+                final View child = getChildAt(i);
+                // 获取子元素的布局参数
+                final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+                // 测量子元素并考虑外边距
+                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
+                // 计算父容器的期望值
+                parentDesireWidth = child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
+                // 取子控件最大宽度
+                tmpWidth = Math.max(tmpWidth, parentDesireWidth);
+                parentDesireHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+            }
+            parentDesireWidth = tmpWidth;
+            parentDesireHeight += tmpHeight;
+            // 考虑父容器内边距
+            parentDesireWidth += getPaddingLeft() + getPaddingRight();
+            parentDesireHeight += getPaddingTop() + getPaddingBottom();
+            // 尝试比较建议最小值和期望值的大小并取大值
+            parentDesireWidth = Math.max(parentDesireWidth, getSuggestedMinimumWidth());
+            parentDesireHeight = Math.max(parentDesireHeight, getSuggestedMinimumHeight());
+        }
+        // 设置最终测量值
+        setMeasuredDimension(resolveSize(parentDesireWidth, widthMeasureSpec), resolveSize(parentDesireHeight, heightMeasureSpec));
+
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        if (mFlexLayoutPosition != null) {
+            // 因为在用到ViewDragHelper处理布局交互的时候，若是有子View的UI更新导致重新Layout的话，需要我们自己处理ViewDragHelper拖动时子View的位置，否则会导致位置错误
+            // Log.e("YytLayout1", "292行-onLayout(): " + "自己处理布局位置");
+            mFlexView.layout(mFlexLayoutPosition.getLeft(), mFlexLayoutPosition.getTop(), mFlexLayoutPosition.getRight(), mFlexLayoutPosition.getBottom());
+            mFollowView.layout(mFollowLayoutPosition.getLeft(), mFollowLayoutPosition.getTop(), mFollowLayoutPosition.getRight(), mFollowLayoutPosition.getBottom());
+            return;
+        }
+
+        final int paddingLeft = getPaddingLeft();
+        final int paddingTop = getPaddingTop();
+
+        int multiHeight = 0;
+
+        for (int i = 0; i < getChildCount(); i++) {
+            // 遍历子元素并对其进行定位布局
+            final View child = getChildAt(i);
+            MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+
+            int left = paddingLeft + lp.leftMargin;
+            int right = child.getMeasuredWidth() + left;
+
+            int top = (i == 0 ? paddingTop : 0) + lp.topMargin + multiHeight;
+            int bottom = child.getMeasuredHeight() + top;
+
+            child.layout(left, top, right, bottom);
+
+            multiHeight += (child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
         }
 
     }
@@ -232,7 +309,7 @@ public class YytLayout extends LinearLayout {
 
         if (mInFlexViewTouchRange) {
 
-            return mIsDragEnable && mDragHelper.shouldInterceptTouchEvent(ev);
+            return mDragHelper.shouldInterceptTouchEvent(ev);
 
         } else {
             return super.onInterceptTouchEvent(ev);
@@ -269,7 +346,6 @@ public class YytLayout extends LinearLayout {
 
         void onClose();
 
-        void onScroll();
     }
 
     public void setOnLayoutStateListener(OnLayoutStateListener onLayoutStateListener) {
@@ -282,6 +358,80 @@ public class YytLayout extends LinearLayout {
     public void expand() {
         mDragHelper.smoothSlideViewTo(mFlexView, 0, 0);
         invalidate();
+    }
+
+    // 生成默认的布局参数
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return super.generateDefaultLayoutParams();
+    }
+
+    // 生成布局参数,将布局参数包装成我们的
+    @Override
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
+        return new MarginLayoutParams(p);
+    }
+
+    // 生成布局参数,从属性配置中生成我们的布局参数
+    @Override
+    public LayoutParams generateLayoutParams(AttributeSet attrs) {
+        return new MarginLayoutParams(getContext(), attrs);
+    }
+
+    // 查当前布局参数是否是我们定义的类型这在code声明布局参数时常常用到
+    @Override
+    protected boolean checkLayoutParams(LayoutParams p) {
+        return p instanceof MarginLayoutParams;
+    }
+
+    /**
+     * 子View的位置缓存
+     */
+    private class ChildLayoutPosition {
+        private int left;
+        private int right;
+        private int top;
+        private int bottom;
+
+        private void setPosition(int left, int right, int top, int bottom) {
+            setLeft(left).setRight(right).setTop(top).setBottom(bottom);
+        }
+
+        private int getLeft() {
+            return left;
+        }
+
+        private ChildLayoutPosition setLeft(int left) {
+            this.left = left;
+            return this;
+        }
+
+        private int getRight() {
+            return right;
+        }
+
+        private ChildLayoutPosition setRight(int right) {
+            this.right = right;
+            return this;
+        }
+
+        private int getTop() {
+            return top;
+        }
+
+        private ChildLayoutPosition setTop(int top) {
+            this.top = top;
+            return this;
+        }
+
+        private int getBottom() {
+            return bottom;
+        }
+
+        private ChildLayoutPosition setBottom(int bottom) {
+            this.bottom = bottom;
+            return this;
+        }
     }
 
 }
