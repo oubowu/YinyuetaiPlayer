@@ -9,7 +9,9 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,14 +71,43 @@ public class YytPlayer extends YytLayout {
         });
 
         mIjkVideoView = (IjkVideoView) findViewById(R.id.ijk_player_view);
-        mIjkVideoView.setOnClickListener(new OnClickListener() {
+        final int scaledTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+        mIjkVideoView.setOnTouchListener(new OnTouchListener() {
+
+            float mDownX = 0;
+            float mDownY = 0;
+            boolean mClickCancel;
+
             @Override
-            public void onClick(View v) {
-                if (isHorizontalEnable()) {
-                    expand();
-                } else {
-                    mIjkVideoView.toggleMediaControlsVisibility();
+            public boolean onTouch(View v, MotionEvent event) {
+                float x = event.getX();
+                float y = event.getY();
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        mDownX = x;
+                        mDownY = y;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        if (Math.abs(mDownX - x) > scaledTouchSlop || Math.abs(mDownY - y) > scaledTouchSlop) {
+                            mClickCancel = true;
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (!mClickCancel && Math.abs(mDownX - x) <= scaledTouchSlop && Math.abs(mDownY - y) <= scaledTouchSlop) {
+                            // 点击事件偶尔失效，只好这里自己解决了
+                            if (isHorizontalEnable()) {
+                                expand();
+                            } else {
+                                mIjkVideoView.toggleMediaControlsVisibility();
+                            }
+                        }
+                        mClickCancel = false;
+                        break;
+                    case MotionEvent.ACTION_CANCEL:
+                        mClickCancel = false;
+                        break;
                 }
+                return true;
             }
         });
 

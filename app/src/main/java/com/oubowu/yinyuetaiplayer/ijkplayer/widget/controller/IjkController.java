@@ -33,7 +33,7 @@ public class IjkController implements IMediaController, View.OnClickListener, Se
     private static final int SHOW = 1;
     private static final int HIDE_DELAY = 2;
 
-    private static final int HIDE_DELAY_DURATION = 5000;
+    private static final int HIDE_DELAY_DURATION = 3000;
 
     private final IjkControllerHandler mHandler;
     private final AnimatorListener mAnimatorListener;

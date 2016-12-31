@@ -14,7 +14,7 @@
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#666666">
+        android:background="#aaaaaa">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -23,15 +23,14 @@
 
             <ImageView
                 android:id="@+id/iv_avatar"
-                tools:src="@mipmap/ic_launcher"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="8dp"
+                tools:src="@mipmap/ic_launcher"/>
 
             <TextView
                 android:id="@+id/tv_name"
-                tools:text="MC GREE"
                 android:layout_width="wrap_content"
                 android:layout_height="50dp"
                 android:layout_alignBottom="@+id/iv_avatar"
@@ -40,11 +39,11 @@
                 android:gravity="center"
                 android:paddingLeft="2dp"
                 android:textColor="#ffffff"
-                android:textSize="13sp"/>
+                android:textSize="13sp"
+                tools:text="MC GREE"/>
 
             <TextView
                 android:id="@+id/tv_time"
-                tools:text="2016-12-27 00:53:49"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@+id/iv_avatar"
@@ -52,11 +51,11 @@
                 android:layout_marginRight="8dp"
                 android:paddingBottom="2dp"
                 android:textColor="#ffffff"
-                android:textSize="12sp"/>
+                android:textSize="12sp"
+                tools:text="2016-12-27 00:53:49"/>
 
             <TextView
                 android:id="@+id/tv_title"
-                tools:text="《放开那个女孩》网络直播知多少"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/iv_avatar"
@@ -66,11 +65,11 @@
                 android:paddingTop="8dp"
                 android:singleLine="true"
                 android:textColor="#ffffff"
-                android:textSize="14sp"/>
+                android:textSize="14sp"
+                tools:text="《放开那个女孩》网络直播知多少"/>
 
             <TextView
                 android:id="@+id/tv_desc"
-                tools:text="而最火的人就是网红，直播和网红相辅相成。而今天的这部网络大电影的女主基本可以算是以为直播N线网红，故事也不过一场直播绑架。"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/tv_title"
@@ -78,7 +77,8 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp"
                 android:textColor="#ffffff"
-                android:textSize="15sp"/>
+                android:textSize="15sp"
+                tools:text="而最火的人就是网红，直播和网红相辅相成。而今天的这部网络大电影的女主基本可以算是以为直播N线网红，故事也不过一场直播绑架。"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/yyt_recycler_view"
