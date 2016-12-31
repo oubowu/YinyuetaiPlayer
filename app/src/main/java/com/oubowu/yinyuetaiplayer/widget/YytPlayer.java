@@ -9,9 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,33 +69,14 @@ public class YytPlayer extends YytLayout {
         });
 
         mIjkVideoView = (IjkVideoView) findViewById(R.id.ijk_player_view);
-        final int scaledTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        mIjkVideoView.setOnTouchListener(new OnTouchListener() {
-
-            float mDownX = 0;
-            float mDownY = 0;
-
+        mIjkVideoView.setOnClickListener(new OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                float x = event.getX();
-                float y = event.getY();
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mDownX = x;
-                        mDownY = y;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        if (Math.abs(mDownX - x) <= scaledTouchSlop && Math.abs(mDownY - y) <= scaledTouchSlop) {
-                            // 点击事件偶尔失效，只好这里自己解决了
-                            if (isHorizontalEnable()) {
-                                expand();
-                            } else {
-                                mIjkVideoView.toggleMediaControlsVisibility();
-                            }
-                        }
-                        break;
+            public void onClick(View v) {
+                if (isHorizontalEnable()) {
+                    expand();
+                } else {
+                    mIjkVideoView.toggleMediaControlsVisibility();
                 }
-                return true;
             }
         });
 
@@ -120,8 +99,6 @@ public class YytPlayer extends YytLayout {
         mYytRecyclerView = (RecyclerView) findViewById(R.id.yyt_recycler_view);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(context, 2, LinearLayoutManager.VERTICAL, false);
-        gridLayoutManager.setSmoothScrollbarEnabled(true);
-        gridLayoutManager.setAutoMeasureEnabled(true);
         mYytRecyclerView.setLayoutManager(gridLayoutManager);
 
         mYytRecyclerView.setNestedScrollingEnabled(false);

@@ -38,6 +38,7 @@ public class YytLayout extends LinearLayout {
 
     // 水平滑动与否的标志位
     private boolean mHorizontalEnable;
+    private boolean mVerticalEnable = true;
     // 是否正在关闭页面的标志位
     private boolean mIsClosing;
 
@@ -108,6 +109,9 @@ public class YytLayout extends LinearLayout {
 
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
+            if (!mVerticalEnable) {
+                return mDragHeight;
+            }
             return Math.max(Math.min(mDragHeight, top), 0);
         }
 
@@ -123,52 +127,38 @@ public class YytLayout extends LinearLayout {
                 // 如果水平滑动有效，首先根据滑动的速度决定关闭页面，方向根据速度正负决定
                 if (xvel > 1500) {
                     mDragHelper.settleCapturedViewAt(mDragWidth, mDragHeight);
-                    invalidate();
                     mIsClosing = true;
-                    return;
                 } else if (xvel < -1500) {
                     mDragHelper.settleCapturedViewAt(-mDragWidth, mDragHeight);
-                    invalidate();
                     mIsClosing = true;
-                    return;
-                }
-
-                // 速度没到关闭页面的要求，根据透明度来决定关闭页面，方向根据releasedChild.getLeft()正负决定
-                float alpha = releasedChild.getAlpha();
-                if (releasedChild.getLeft() < 0) {
-                    if (alpha <= 0.4f) {
+                } else {
+                    // 速度没到关闭页面的要求，根据透明度来决定关闭页面，方向根据releasedChild.getLeft()正负决定
+                    float alpha = releasedChild.getAlpha();
+                    if (releasedChild.getLeft() < 0 && alpha <= 0.4f) {
                         mDragHelper.settleCapturedViewAt(-mDragWidth, mDragHeight);
-                        invalidate();
                         mIsClosing = true;
-                        return;
+                    } else if (releasedChild.getLeft() > 0 && alpha <= 0.4f) {
+                        mDragHelper.settleCapturedViewAt(mDragWidth, mDragHeight);
+                        mIsClosing = true;
+                    } else {
+                        mDragHelper.settleCapturedViewAt(0, mDragHeight);
                     }
-                } else if (alpha <= 0.4f) {
-                    mDragHelper.settleCapturedViewAt(mDragWidth, mDragHeight);
-                    invalidate();
-                    mIsClosing = true;
-                    return;
                 }
-
-            }
-
-            // 根据垂直方向的速度正负决定布局的展示方式
-            if (yvel > 1500) {
-                mDragHelper.settleCapturedViewAt(0, mDragHeight);
-                invalidate();
-                return;
-            } else if (yvel < -1500) {
-                mDragHelper.settleCapturedViewAt(0, 0);
-                invalidate();
-                return;
-            }
-
-            // 根据releasedChild.getTop()决定布局的展示方式
-            if (releasedChild.getTop() <= mDragHeight / 2) {
-                mDragHelper.settleCapturedViewAt(0, 0);
             } else {
-                mDragHelper.settleCapturedViewAt(0, mDragHeight);
+                // 根据垂直方向的速度正负决定布局的展示方式
+                if (yvel > 1500) {
+                    mDragHelper.settleCapturedViewAt(0, mDragHeight);
+                } else if (yvel < -1500) {
+                    mDragHelper.settleCapturedViewAt(0, 0);
+                } else {
+                    // 根据releasedChild.getTop()决定布局的展示方式
+                    if (releasedChild.getTop() <= mDragHeight / 2) {
+                        mDragHelper.settleCapturedViewAt(0, 0);
+                    } else {
+                        mDragHelper.settleCapturedViewAt(0, mDragHeight);
+                    }
+                }
             }
-
             invalidate();
         }
 
@@ -193,7 +183,7 @@ public class YytLayout extends LinearLayout {
             mFollowView.setTop(mFollowView.getTop() + dy);
 
             // 通过alphaRatio作为水平滑动的基准
-            mHorizontalEnable = alphaRatio <= 0.05;
+            mHorizontalEnable = alphaRatio <= 0.01;
 
             if (mHorizontalEnable) {
                 // 如果水平滑动允许的话，由于设置缩放不会影响mFlexView的宽高，所以水平滑动距离为mFlexView宽度一半
@@ -202,10 +192,15 @@ public class YytLayout extends LinearLayout {
                 // 设置mFlexView的透明度，这里向左右水平滑动透明度都随之变化
                 changedView.setAlpha(1 - Math.abs(left) * 1.0f / mDragWidth);
 
+                mVerticalEnable = left < 0 && left >= -mDragWidth * 0.05;
+
             } else {
                 // 不是水平滑动的处理
                 changedView.setAlpha(1);
                 mDragWidth = 0;
+
+                mVerticalEnable = true;
+
             }
 
             if (mFlexLayoutPosition == null) {
@@ -277,7 +272,13 @@ public class YytLayout extends LinearLayout {
 
         int multiHeight = 0;
 
-        for (int i = 0; i < getChildCount(); i++) {
+        int count = getChildCount();
+
+        if (count != 2) {
+            throw new IllegalArgumentException("此容器的子元素个数必须为2！");
+        }
+
+        for (int i = 0; i < count; i++) {
             // 遍历子元素并对其进行定位布局
             final View child = getChildAt(i);
             MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
