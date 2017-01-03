@@ -95,7 +95,7 @@ public class YytPlayer extends YytLayout {
                     case MotionEvent.ACTION_UP:
                         if (!mClickCancel && Math.abs(mDownX - x) <= scaledTouchSlop && Math.abs(mDownY - y) <= scaledTouchSlop) {
                             // 点击事件偶尔失效，只好这里自己解决了
-                            if (isHorizontalEnable()) {
+                            if (isHorizontalDragEnable()) {
                                 expand();
                             } else {
                                 mIjkVideoView.toggleMediaControlsVisibility();

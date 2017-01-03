@@ -22,36 +22,45 @@ public class YytLayout extends ViewGroup {
     // 拖动的高度
     private int mDragHeight;
 
-    // 响应滑动做缩放的View
+    // 响应拖动做缩放的View
     private View mFlexView;
-    // 与mFlexView联动的View
+    // 与mFlexView联动做透明度渐变的View
     private View mFollowView;
 
-    // 响应滑动做缩放的View保存的位置
+    // 响应拖动做缩放的View保存的位置
     private ChildLayoutPosition mFlexLayoutPosition;
     // 与mFlexView联动的View保存的位置
     private ChildLayoutPosition mFollowLayoutPosition;
 
-    public boolean isHorizontalEnable() {
-        return mHorizontalEnable;
+    // 水平拖动与否的标志位
+    private boolean mHorizontalDragEnable;
+
+    public boolean isHorizontalDragEnable() {
+        return mHorizontalDragEnable;
     }
 
-    // 水平滑动与否的标志位
-    private boolean mHorizontalEnable;
-    private boolean mVerticalEnable = true;
+    // 垂直拖动与否的标志位
+    private boolean mVerticalDragEnable = true;
+
     // 是否正在关闭页面的标志位
     private boolean mIsClosing;
 
+    // 监听布局是否水平拖动关闭了
     private OnLayoutStateListener mOnLayoutStateListener;
 
+    // 做拖放缩放的子View的宽度
     private int mFlexWidth;
+    // 做拖放缩放的子View的高度
     private int mFlexHeight;
 
-    private float mScaleRatio = 1;
+    // mFlexView缩放的比率
+    private float mFlexScaleRatio = 1;
 
+    // mFlexView缩放的基准点的偏移值
+    private int mFlexScaleOffset;
+
+    // 触摸事件是否发生在mFlexView的区域
     private boolean mInFlexViewTouchRange;
-
-    private int mScaleOffset;
 
     public YytLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -73,7 +82,7 @@ public class YytLayout extends ViewGroup {
             @Override
             public void run() {
 
-                // 需要添加的两个子View，其中mFlexView作为滑动的响应View，mLinkView作为跟随View
+                // 需要添加的两个子View，其中mFlexView作为拖动的响应View，mLinkView作为跟随View
                 mFlexView = getChildAt(0);
                 mFollowView = getChildAt(1);
 
@@ -91,7 +100,7 @@ public class YytLayout extends ViewGroup {
 
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
-            // Log.e("FlexCallback", "74行-tryCaptureView(): " + " " + child);
+            // mFlexView来响应触摸事件
             return mFlexView == child;
         }
 
@@ -107,7 +116,8 @@ public class YytLayout extends ViewGroup {
 
         @Override
         public int clampViewPositionVertical(View child, int top, int dy) {
-            if (!mVerticalEnable) {
+            if (!mVerticalDragEnable) {
+                // 不允许垂直拖动的时候是mFlexView在底部水平拖动一定距离时设置的，返回mDragHeight就不能再垂直做拖动了
                 return mDragHeight;
             }
             return Math.max(Math.min(mDragHeight, top), 0);
@@ -121,8 +131,8 @@ public class YytLayout extends ViewGroup {
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
 
-            if (mHorizontalEnable) {
-                // 如果水平滑动有效，首先根据滑动的速度决定关闭页面，方向根据速度正负决定
+            if (mHorizontalDragEnable) {
+                // 如果水平拖动有效，首先根据拖动的速度决定关闭页面，方向根据速度正负决定
                 if (xvel > 1500) {
                     mDragHelper.settleCapturedViewAt(mDragWidth, mDragHeight);
                     mIsClosing = true;
@@ -166,46 +176,51 @@ public class YytLayout extends ViewGroup {
             float fraction = top * 1.0f / mDragHeight;
 
             // mFlexView缩放的比率
-            mScaleRatio = 1 - 0.5f * fraction;
-            mScaleOffset = changedView.getWidth() / 20;
+            mFlexScaleRatio = 1 - 0.5f * fraction;
+            mFlexScaleOffset = changedView.getWidth() / 20;
             // 设置缩放基点
-            changedView.setPivotX(changedView.getWidth() - mScaleOffset);
-            changedView.setPivotY(changedView.getHeight() - mScaleOffset);
-            changedView.setScaleX(mScaleRatio);
-            changedView.setScaleY(mScaleRatio);
+            changedView.setPivotX(changedView.getWidth() - mFlexScaleOffset);
+            changedView.setPivotY(changedView.getHeight() - mFlexScaleOffset);
+            // 设置比例
+            changedView.setScaleX(mFlexScaleRatio);
+            changedView.setScaleY(mFlexScaleRatio);
 
-            // mLinkView透明度的比率
+            // mFollowView透明度的比率
             float alphaRatio = 1 - fraction;
+            // 设置透明度
             mFollowView.setAlpha(alphaRatio);
-            // 根据垂直方向的dy设置top，产生跟随的效果
+            // 根据垂直方向的dy设置top，产生跟随mFlexView的效果
             mFollowView.setTop(mFollowView.getTop() + dy);
 
-            // 到底部的时候，changedView的top刚好等于mDragHeight，以此作为水平滑动的基准
-            mHorizontalEnable = top == mDragHeight;
+            // 到底部的时候，changedView的top刚好等于mDragHeight，以此作为水平拖动的基准
+            mHorizontalDragEnable = top == mDragHeight;
 
-            if (mHorizontalEnable) {
-                // 如果水平滑动允许的话，由于设置缩放不会影响mFlexView的宽高，所以水平滑动距离为mFlexView宽度一半
+            if (mHorizontalDragEnable) {
+                // 如果水平拖动允许的话，由于设置缩放不会影响mFlexView的宽高（比如getWidth），所以水平拖动距离为mFlexView宽度一半
                 mDragWidth = (int) (changedView.getMeasuredWidth() * 0.5f);
 
-                // 设置mFlexView的透明度，这里向左右水平滑动透明度都随之变化
+                // 设置mFlexView的透明度，这里向左右水平拖动透明度都随之变化
                 changedView.setAlpha(1 - Math.abs(left) * 1.0f / mDragWidth);
 
-                mVerticalEnable = left < 0 && left >= -mDragWidth * 0.05;
+                // 水平拖动一定距离的话，垂直拖动将被禁止
+                mVerticalDragEnable = left < 0 && left >= -mDragWidth * 0.05;
 
             } else {
-                // 不是水平滑动的处理
+                // 不是水平拖动的处理
                 changedView.setAlpha(1);
                 mDragWidth = 0;
 
-                mVerticalEnable = true;
+                mVerticalDragEnable = true;
 
             }
 
             if (mFlexLayoutPosition == null) {
+                // 创建子元素位置缓存
                 mFlexLayoutPosition = new ChildLayoutPosition();
                 mFollowLayoutPosition = new ChildLayoutPosition();
             }
 
+            // 记录子元素的位置
             mFlexLayoutPosition.setPosition(mFlexView.getLeft(), mFlexView.getRight(), mFlexView.getTop(), mFlexView.getBottom());
             mFollowLayoutPosition.setPosition(mFollowView.getLeft(), mFollowView.getRight(), mFollowView.getTop(), mFollowView.getBottom());
 
@@ -216,7 +231,6 @@ public class YytLayout extends ViewGroup {
 
     }
 
-    // 如果直接继承ViewGroup的话，这里的测量有问题，如果第二个子元素是NestedScrollView嵌套了RecyclerView的话，滚动到底部会显示不全；暂时继承LinearLayout让它帮忙测量
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
@@ -225,31 +239,31 @@ public class YytLayout extends ViewGroup {
 
         int tmpHeight = 0;
 
-        if (getChildCount() != 2) {
+        int count = getChildCount();
+
+        if (count != 2) {
             throw new IllegalArgumentException("只允许容器添加两个子View！");
         }
 
-        if (getChildCount() > 0) {
-            for (int i = 0; i < getChildCount(); i++) {
-                final View child = getChildAt(i);
-                // 测量子元素并考虑外边距
-                // 参数heightUse：父容器竖直已经被占用的空间，比如被父容器的其他子 view 所占用的空间；这里我们需要的是子View垂直排列，所以需要设置这个值
-                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, tmpHeight);
-                // 获取子元素的布局参数
-                final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
-                // 计算子元素宽度，取子控件最大宽度
-                desireWidth = Math.max(desireWidth, child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);
-                // 计算子元素高度
-                tmpHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
-                desireHeight += tmpHeight;
-            }
-            // 考虑父容器内边距
-            desireWidth += getPaddingLeft() + getPaddingRight();
-            desireHeight += getPaddingTop() + getPaddingBottom();
-            // 尝试比较建议最小值和期望值的大小并取大值
-            desireWidth = Math.max(desireWidth, getSuggestedMinimumWidth());
-            desireHeight = Math.max(desireHeight, getSuggestedMinimumHeight());
+        for (int i = 0; i < count; i++) {
+            final View child = getChildAt(i);
+            // 测量子元素并考虑外边距
+            // 参数heightUse：父容器竖直已经被占用的空间，比如被父容器的其他子 view 所占用的空间；这里我们需要的是子View垂直排列，所以需要设置这个值
+            measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, tmpHeight);
+            // 获取子元素的布局参数
+            final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
+            // 计算子元素宽度，取子控件最大宽度
+            desireWidth = Math.max(desireWidth, child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);
+            // 计算子元素高度
+            tmpHeight = child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
+            desireHeight += tmpHeight;
         }
+        // 考虑父容器内边距
+        desireWidth += getPaddingLeft() + getPaddingRight();
+        desireHeight += getPaddingTop() + getPaddingBottom();
+        // 尝试比较建议最小值和期望值的大小并取大值
+        desireWidth = Math.max(desireWidth, getSuggestedMinimumWidth());
+        desireHeight = Math.max(desireHeight, getSuggestedMinimumHeight());
         // 设置最终测量值
         setMeasuredDimension(resolveSize(desireWidth, widthMeasureSpec), resolveSize(desireHeight, heightMeasureSpec));
     }
@@ -271,10 +285,6 @@ public class YytLayout extends ViewGroup {
         int multiHeight = 0;
 
         int count = getChildCount();
-
-        if (count != 2) {
-            throw new IllegalArgumentException("此容器的子元素个数必须为2！");
-        }
 
         for (int i = 0; i < count; i++) {
             // 遍历子元素并对其进行定位布局
@@ -299,11 +309,11 @@ public class YytLayout extends ViewGroup {
 
         // Log.e("YytLayout", mFlexView.getLeft() + ";" + mFlexView.getTop() + " --- " + ev.getX() + ":" + ev.getY());
 
-        // 由于缩放不会影响mFlexView真实宽高，这里手动计算实际的范围
-        float left = mFlexView.getLeft() + mFlexWidth * (1 - mScaleRatio) - mScaleOffset * (1 - mScaleRatio);
-        float top = mFlexView.getTop() + mFlexHeight * (1 - mScaleRatio) - mScaleOffset * (1 - mScaleRatio);
+        // 由于缩放不会影响mFlexView真实宽高，这里手动计算视觉上的范围
+        float left = mFlexView.getLeft() + mFlexWidth * (1 - mFlexScaleRatio) - mFlexScaleOffset * (1 - mFlexScaleRatio);
+        float top = mFlexView.getTop() + mFlexHeight * (1 - mFlexScaleRatio) - mFlexScaleOffset * (1 - mFlexScaleRatio);
 
-        // 这里所做的是判断手指是否落在mFlexView真实范围内
+        // 这里所做的是判断手指是否落在mFlexView视觉上的范围内
         mInFlexViewTouchRange = ev.getX() >= left && ev.getY() >= top;
 
         if (mInFlexViewTouchRange) {
@@ -322,7 +332,7 @@ public class YytLayout extends ViewGroup {
             mDragHelper.processTouchEvent(event);
             return true;
         } else {
-            // 不在mFlexView触摸范围内，并且子View没有消费，返回false，把事件传递下去
+            // 不在mFlexView触摸范围内，并且子View没有消费，返回false，把事件传递回去
             return false;
         }
     }
@@ -332,14 +342,14 @@ public class YytLayout extends ViewGroup {
         if (mDragHelper.continueSettling(true)) {
             invalidate();
         } else if (mIsClosing && mOnLayoutStateListener != null) {
-            // 正在关闭的情况下，并且滑动结束后，告知将要关闭页面
+            // 正在关闭的情况下，并且拖动结束后，告知将要关闭页面
             mOnLayoutStateListener.onClose();
             mIsClosing = false;
         }
     }
 
     /**
-     * 监听布局是否在垂直滑动或者水平滑动关闭
+     * 监听布局是否水平拖动关闭了
      */
     public interface OnLayoutStateListener {
 

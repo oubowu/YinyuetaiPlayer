@@ -1,10 +1,13 @@
-## 高仿音悦台悬浮播放页面
-
-### 思路
-使用ViewDragHelper来处理播放器和播放器下面的布局的滑动事件处理。
+## 高仿音悦台播放页面交互效果
 
 ### 效果图
-![Demo](/pic/demo.gif) 
+![这里写图片描述](http://upload-images.jianshu.io/upload_images/1982467-efa6dcde5a37300b.gif?imageMogr2/auto-orient/strip)
+![这里写图片描述](http://upload-images.jianshu.io/upload_images/1982467-ebe0394ccfa6e2e8.gif?imageMogr2/auto-orient/strip)
+![这里写图片描述](http://upload-images.jianshu.io/upload_images/1982467-b1672383d0f7fa8a.gif?imageMogr2/auto-orient/strip)
+
+### 思路
+使用ViewDragHelper来处理播放器和播放器下面的布局的拖动事件处理。<p>
+我的简书里有详细讲解：[高仿音悦台播放页面交互效果](http://blog.csdn.net/oushangfeng123/article/details/53272496)
 
 #### License
 ```
