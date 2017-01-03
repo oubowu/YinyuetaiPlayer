@@ -7,7 +7,7 @@
 
 ### 思路
 使用ViewDragHelper来处理播放器和播放器下面的布局的拖动事件处理。<p>
-我的简书里有详细讲解：[高仿音悦台播放页面交互效果](http://blog.csdn.net/oushangfeng123/article/details/53272496)
+我的简书里有详细讲解：[高仿音悦台播放页面交互效果](http://www.jianshu.com/p/3cec604c6609)
 
 #### License
 ```
